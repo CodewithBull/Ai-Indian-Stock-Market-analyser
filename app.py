@@ -70,8 +70,3 @@ def predict_stock():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-lekin isma llm model hi dalunga gemini ya pollination hn kyukni ye jyda shi na hogi abhi uske liye bhotdata chayye
-hn vhi lekin phele ya bta idea kisa ha badhiya h par ek or website bhi thi sayad aesi usme to sayad auto invest bhi thaa 
-lekin agar usna galat jagah paisa daal diya to problem bhi ho sakti  bhi vh soch rha tha pkka sure na hu m ki vo feature tha ya na ad me dekha tha maine to 
-maina search kra par ek bhi aisi website na aayi
