@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .stock-data {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock Market Assistant</h1>
+    <p>Enter a stock symbol (e.g., RELIANCE.NS):</p>
+    <input type="text" id="stock-symbol" placeholder="Enter stock symbol">
+    <button id="get-stock-data">Get Stock Data</button>
+
+    <div id="stock-result" class="stock-data" style="display: none;">
+        <h2 id="stock-name"></h2>
+        <p id="last-price"></p>
+        <p id="day-high"></p>
+        <p id="day-low"></p>
+        <p id="market-cap"></p>
+        <p id="pe-ratio"></p>
+        <p id="dividend-yield"></p>
+        <p id="52-week-high"></p>
+        <p id="52-week-low"></p>
+    </div>
+
+    <p id="error-message" class="error"></p>
+
+    <script>
+        document.getElementById('get-stock-data').addEventListener('click', () => {
+            const stockSymbol = document.getElementById('stock-symbol').value.trim();
+
+            if (!stockSymbol) {
+                alert('Please enter a stock symbol.');
+                return;
+            }
+
+            fetch(`http://127.0.0.1:5000/get_stock_data?symbol=${stockSymbol}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('error-message').innerText = data.error;
+                        document.getElementById('stock-result').style.display = 'none';
+                    } else {
+                        document.getElementById('error-message').innerText = '';
+                        document.getElementById('stock-result').style.display = 'block';
+
+                        document.getElementById('stock-name').innerText = `${data.symbol} - ${data.name}`;
+                        document.getElementById('last-price').innerText = `Last Price: ₹${data.last_price || 'Not Available'}`;
+                        document.getElementById('day-high').innerText = `Day High: ₹${data.day_high || 'Not Available'}`;
+                        document.getElementById('day-low').innerText = `Day Low: ₹${data.day_low || 'Not Available'}`;
+                        document.getElementById('market-cap').innerText = `Market Cap: ₹${data.market_cap || 'Not Available'}`;
+                        document.getElementById('pe-ratio').innerText = `P/E Ratio: ${data.pe_ratio || 'Not Available'}`;
+                        document.getElementById('dividend-yield').innerText = `Dividend Yield: ${data.dividend_yield ? data.dividend_yield * 100 : 'Not Available'}%`;
+                        document.getElementById('52-week-high').innerText = `52-Week High: ₹${data["52_week_high"] || 'Not Available'}`;
+                        document.getElementById('52-week-low').innerText = `52-Week Low: ₹${data["52_week_low"] || 'Not Available'}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stock data:', error);
+                    document.getElementById('error-message').innerText = 'Error fetching stock data. Please try again.';
+                });
+        });
+    </script>
+</body>
+</html>
