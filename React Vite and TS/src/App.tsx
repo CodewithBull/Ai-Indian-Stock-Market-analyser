@@ -22,52 +22,69 @@ import {
   Users
 } from 'lucide-react';
 
-// Mock data for demonstration
-const mockAnalysis = (symbol: string) => ({
-  basicInfo: {
-    companyName: "Example Company Inc.",
-    symbol: symbol,
-    currentPrice: "$156.78",
-    marketCap: "$2.3B",
-    peRatio: "24.5"
-  },
-  priceMetrics: {
-    yearHigh: "$180.45",
-    yearLow: "$120.30",
-    dayHigh: "$158.90",
-    dayLow: "$155.20"
-  },
-  financialMetrics: {
-    dividendYield: "2.5%"
-  },
-  aiAnalysis: {
-    technicalSummary: "Bullish trend with strong momentum",
-    sentiment: "Positive",
-    supportResistance: {
-      support: "$154.50",
-      resistance: "$160.25"
-    },
-    riskAssessment: "Moderate",
-    prediction: "$162.50 (7-day forecast)",
-    volume: "Above average trading volume",
-    trend: "Upward trend with potential breakout",
-    marketComparison: "Outperforming sector by 5.2%"
-  }
-});
-
 function StockAnalysis() {
   const [symbol, setSymbol] = useState('');
   const [analysis, setAnalysis] = useState<any>(null);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!symbol.includes('.')) {
       setError('Please provide the stock symbol in the format: SYMBOL.EXCHANGE');
       return;
     }
     setError('');
-    setAnalysis(mockAnalysis(symbol));
+
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/get_stock_data?symbol=${symbol}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch stock data');
+      }
+      const data = await response.json();
+
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
+      // Transform the API response into the expected format
+      const transformedData = {
+        basicInfo: {
+          companyName: data.name || 'Not Available',
+          symbol: data.symbol,
+          currentPrice: `$${data.last_price}`,
+          marketCap: `$${data.market_cap}`,
+          peRatio: data.pe_ratio
+        },
+        priceMetrics: {
+          yearHigh: `$${data['52_week_high']}`,
+          yearLow: `$${data['52_week_low']}`,
+          dayHigh: `$${data.day_high}`,
+          dayLow: `$${data.day_low}`
+        },
+        financialMetrics: {
+          dividendYield: data.dividend_yield
+        },
+        aiAnalysis: {
+          technicalSummary: "Bullish trend with strong momentum",
+          sentiment: "Positive",
+          supportResistance: {
+            support: "$154.50",
+            resistance: "$160.25"
+          },
+          riskAssessment: "Moderate",
+          prediction: "$162.50 (7-day forecast)",
+          volume: "Above average trading volume",
+          trend: "Upward trend with potential breakout",
+          marketComparison: "Outperforming sector by 5.2%"
+        }
+      };
+
+      setAnalysis(transformedData);
+    } catch (error) {
+      setError('Failed to fetch stock data. Please try again.');
+      console.error(error);
+    }
   };
 
   return (
@@ -347,7 +364,7 @@ function StockAnalysis() {
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div className="bg-gray-800/50 p-8 rounded-xl backdrop-blur-sm">
               <div className="flex items-center mb-4">
-                <Users className="w-12 h-12 text-blue-400 mr-4" />
+              <Users className="w-12 h-12 text-blue-400 mr-4" />
                 <div>
                   <h4 className="font-semibold">John Smith</h4>
                   <p className="text-gray-400 text-sm">Professional Trader</p>
